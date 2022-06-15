@@ -5,6 +5,11 @@ using Obj;
 using System.Globalization;
 using System.Collections.Generic;
 using TMPro;
+using System.IO;
+using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
+using Application = UnityEngine.Application;
+using Button = UnityEngine.UI.Button;
 
 public class Executable : MonoBehaviour {
     //these also need to be attached to a game object
@@ -14,6 +19,9 @@ public class Executable : MonoBehaviour {
     private List<GameObject> loaded = new List<GameObject>();
     [SerializeField] Slider slider;
     [SerializeField] private TMP_Dropdown dropdown;
+    [SerializeField] private GameObject panel;
+    [SerializeField] private Button quit;
+    [SerializeField] private Button menu;
     /*
     async public void Load()
     {
@@ -39,15 +47,13 @@ public class Executable : MonoBehaviour {
         }
     }
     */
-    private void Load()
+    private void Load(string path)
     {
+        Clear();
         status.text = "Loading new model...";
         var stopwatch = new System.Diagnostics.Stopwatch();
         stopwatch.Start();
-
-        //string path = pathInputField.text;
-        string path = "C:/Users/Alden/Documents/Helios/samples/weberpenntree_selftest/build/walnut.obj";
-        //string path = "C:/Users/Alden/Documents/Helios/samples/radiation_selftest/build/walnut.obj";
+        panel.gameObject.transform.localScale = new Vector3(0,0,0);
         float scale = float.Parse(scaleInputField.text, CultureInfo.InvariantCulture);
 
         // This line is all you need to load a model from file. Synchronous loading is also available with ObjParser.Parse()
@@ -56,6 +62,8 @@ public class Executable : MonoBehaviour {
         stopwatch.Stop();
         status.text = $"Model loaded in {stopwatch.Elapsed}";
         loaded.Add(model);
+        quit.gameObject.SetActive(true);
+        menu.gameObject.SetActive(true);
         if (ObjParser.dataNames.Count > 0)
         {
             dropdown.gameObject.SetActive(true);
@@ -64,8 +72,33 @@ public class Executable : MonoBehaviour {
             SetModelColor();
         }
     }
+
+    public void checkValidPath()
+    {
+        string path = pathInputField.text;
+        
+        if (path.Length == 0)
+        {
+            status.text = "Input Path to OBJ file";
+            
+        }
+        else if (!File.Exists(path))
+        {
+            status.text = $"File does not exist";
+            
+        }
+        else if (Path.GetExtension(path) != ".obj")
+        {
+            status.text = $"Not valid .obj file";
+            
+        }
+        else
+        {
+            Load(path);
+        }
+    }
     
-    private void Clear()
+    public void Clear()
     {
         foreach (var model in loaded)
         {
@@ -75,7 +108,7 @@ public class Executable : MonoBehaviour {
         loaded.Clear();
     }
 
-    private void Quit()
+    public void Quit()
     {
         Application.Quit();
     }
@@ -115,5 +148,11 @@ public class Executable : MonoBehaviour {
             
         }
         
+    }
+
+    public void bringBackScale()
+    {
+        panel.gameObject.transform.localScale  = new Vector3(1,1,1);
+        dropdown.ClearOptions();
     }
 }
