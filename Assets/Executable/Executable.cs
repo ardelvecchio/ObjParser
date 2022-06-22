@@ -6,6 +6,8 @@ using System.Globalization;
 using System.Collections.Generic;
 using TMPro;
 using System.IO;
+using System.Web.Services.Discovery;
+using System.Web.UI.Design;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 using Application = UnityEngine.Application;
@@ -22,6 +24,12 @@ public class Executable : MonoBehaviour {
     [SerializeField] private GameObject panel;
     [SerializeField] private Button quit;
     [SerializeField] private Button menu;
+
+    [SerializeField] private TMP_InputField minvalue;
+    [SerializeField] private TMP_InputField maxvalue;
+    [SerializeField] private Button applyScale;
+
+    [SerializeField] private GameObject range;
     /*
     async public void Load()
     {
@@ -58,7 +66,7 @@ public class Executable : MonoBehaviour {
 
         // This line is all you need to load a model from file. Synchronous loading is also available with ObjParser.Parse()
         var model = ObjParser.Parse(path, scale);
-
+        
         stopwatch.Stop();
         status.text = $"Model loaded in {stopwatch.Elapsed}";
         loaded.Add(model);
@@ -68,6 +76,8 @@ public class Executable : MonoBehaviour {
         {
             dropdown.gameObject.SetActive(true);
             slider.gameObject.SetActive(true);
+            range.gameObject.SetActive(true);
+            applyScale.gameObject.SetActive(true);
             SetDropDownMenu();
             SetModelColor();
         }
@@ -106,6 +116,8 @@ public class Executable : MonoBehaviour {
         }
 
         loaded.Clear();
+        ObjParser.dataNames.Clear();
+        ObjParser.colorList.Clear();
     }
 
     public void Quit()
@@ -135,6 +147,17 @@ public class Executable : MonoBehaviour {
         dropdown.AddOptions(names);
     }
 
+    public void ScaleDropDown()
+    {
+        var minVal = float.Parse(minvalue.text, CultureInfo.InvariantCulture.NumberFormat);
+        var maxVal = float.Parse(maxvalue.text, CultureInfo.InvariantCulture.NumberFormat);
+        
+        DataProcess.ReScaleDat(minVal, maxVal);
+        ObjParser.colorList = ObjGeometryProcessor.ResetColor();
+        
+        SetModelColor();
+    }
+
     private void SetModelColor()
     {
         foreach (var model in loaded)
@@ -149,10 +172,16 @@ public class Executable : MonoBehaviour {
         }
         
     }
-
+    //added this function because could not figure out how to toggle panel on and off
+    //using code so I just make it small and then bring it back to scale
     public void bringBackScale()
     {
         panel.gameObject.transform.localScale  = new Vector3(1,1,1);
         dropdown.ClearOptions();
+        range.gameObject.SetActive(false);
+        applyScale.gameObject.SetActive(false);
+        minvalue.text = "";
+        maxvalue.text = "";
+        slider.value = 0;
     }
 }

@@ -32,6 +32,7 @@ namespace Obj
                 stopwatch.Start();
             }
             
+            DataProcess.datList.Clear();
             
             string[] datFiles = Directory.GetFiles(Path.Combine(Path.GetDirectoryName(path)), "*.dat");
             if (datFiles.Length > 0)
@@ -41,10 +42,11 @@ namespace Obj
                     var datStreamReader = GetStreamReader(datFiles[i]);
                     DataProcess.SortDat(datStreamReader);
                 }
+                
             }
+            
             var modelData = ObjGeometryProcessor.ProcessStream(streamReader, scale);
             
-            //need these two lists in accesable in executable
             colorList = modelData.datColors;
             dataNames = DataProcess.parseDatList(datFiles);
 

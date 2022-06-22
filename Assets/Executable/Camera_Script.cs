@@ -26,8 +26,8 @@ public class Camera_Script : MonoBehaviour
     {
 
         cam = GetComponent<Camera>();
-        cam.transform.position = new Vector3(0, 0.7f, -2);
-        cam.transform.rotation = Quaternion.Euler(new Vector3(10, 0, 0));
+        cam.transform.position = new Vector3(0, 2.5f, -13);
+        cam.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
         
         cam.nearClipPlane = 0.05f;
     }
