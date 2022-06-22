@@ -2,18 +2,34 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using UnityEngine;
 
 
-public static class DataProcess
+public static class DataProcess 
 {
     public static List<List<float>> datList = new List<List<float>>();
-
-    private static float maxDat_val;
-    
+    public static List<List<float>> copyList = new List<List<float>>();
+    public static int saveVertCount;
+    public static Dictionary<string, List<int>> triangleList = new Dictionary<string, List<int>>();
+    private static List<float> maxDatList = new List<float>();
+    //make new method that rescales data from scaled data
+    public static void ReScaleDat(float min, float max)
+    {
+        var scaledMin = min / max;
+        for (int j = 0; j < datList.Count; j++)
+        {
+            for (int i = 0; i < datList[j].Count; i++)
+            {
+                var dat = copyList[j][i];
+                var normalizedVal = dat / max;
+                datList[j][i] = (normalizedVal < scaledMin) ? scaledMin : (normalizedVal > 1) ? 1 : normalizedVal;
+            }
+        }
+    }
     public static void SortDat(StreamReader streamReader)
     {
         List<float> dat = new List<float>();
-        maxDat_val = 0;
+        float maxDat_val = 0;
         
         while (!streamReader.EndOfStream)
         {
@@ -27,12 +43,13 @@ public static class DataProcess
 
             dat.Add(datVal);
         }
-
-        dat = normalizeDat(dat);
-        datList.Add(dat);
+        copyList.Add(new List<float>(dat));
+        dat = normalizeDat(dat, maxDat_val);
+        datList.Add(new List<float>(dat));
+        maxDatList.Add(maxDat_val);
     }
 
-    public static List<float> normalizeDat(List<float> datList)
+    public static List<float> normalizeDat(List<float> datList, float maxDat_val)
     {
         for (int i = 0; i < datList.Count; i++)
         {

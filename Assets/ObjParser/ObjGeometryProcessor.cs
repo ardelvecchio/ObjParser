@@ -34,10 +34,18 @@ namespace Obj
 
         private bool processingFaces = false;
 
+        public static List<List<Color>> ResetColor()
+        {
+            var geometryProcessor = new ObjGeometryProcessor();
+            geometryProcessor.SetGradient();
+            return geometryProcessor.SetColors();
+        }
+
         public static ModelData ProcessStream(StreamReader streamReader, float scale, CancellationToken? ct = null)
         {
             var geometryProcessor = new ObjGeometryProcessor();
             return geometryProcessor.GetMeshes(streamReader, scale, ct);
+            
         }
 
         public ModelData GetMeshes(StreamReader streamReader, float scale, CancellationToken? ct = null)
@@ -113,16 +121,23 @@ namespace Obj
                     default:
                         break;
                 }
-
+                
+                
                 if (ct?.IsCancellationRequested ?? false)
                 {
                     streamReader.Close();
                     ct?.ThrowIfCancellationRequested();
                 }
             }
-
+            DataProcess.saveVertCount = vertices.Count;
+            DataProcess.triangleList = new Dictionary<string, List<int>>(triangles);
+            
             SetGradient();
-            modelData.datColors = SetColors();
+            if (DataProcess.datList.Count > 0)
+            {
+                modelData.datColors = SetColors();
+            }
+
             FinishMeshProcessing(modelData.meshes);
             streamReader.Close();
 
@@ -206,7 +221,7 @@ namespace Obj
             gradient.SetKeys(colorKey, alphaKeys);
         }
         
-        public List<List<Color>> SetColors()
+        private List<List<Color>> SetColors()
         {
             List<List<Color>> colorList = new List<List<Color>>();
             Color[][] colors = new Color[DataProcess.datList.Count][];
@@ -214,10 +229,10 @@ namespace Obj
             
             for (int j = 0; j < DataProcess.datList.Count; j++)
             {
-                colors[j] = new Color[vertices.Count];
+                colors[j] = new Color[DataProcess.saveVertCount];
                 var id = 0;
                 
-                foreach (var pair in triangles)
+                foreach (var pair in DataProcess.triangleList)
                 {
                     //set ID to lowest value in triangles. Since they read backwards, its the last value of the
                     //first triangle
@@ -302,7 +317,10 @@ namespace Obj
             {
                 meshData.materialNames.Add(pair.Key);
                 meshData.triangles.Add(pair.Value);
+                
             }
+
+            
             
             triangles.Clear();
             splitVertices.Clear();
